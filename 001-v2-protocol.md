@@ -6,6 +6,8 @@ I made the first version of the SLP Agora protocol in a rather quick-and-dirty f
 
 Now that it's starting to gain traction, I think it's time re-engineer a protocol that can be used intuitively for all sorts of applications, focused on, but not limited to, trading. This RFC is meant as a living document collecting ideas, constrains and possible solutions.
 
+Further, due to community feedback, the project will be renamed to "slpdex", with the domain slpdex.cash.
+
 ## Current protocol
 
 Currently, a trade consists of two transactions, created in this order:
@@ -13,7 +15,7 @@ Currently, a trade consists of two transactions, created in this order:
 1. SLP transaction containing the smart contract as output
 2. EXCH transaction containing all the relevent metadata for spending the smart contract
 
-The SLP transaction is created first, and looks like this:
+The **SLP transaction** is created first, and looks like this:
 
 Outputs:
 1. vout 0: OP_RETURN: SLP SEND metadata, see https://github.com/jcramer/slp-specification/blob/master/slp-token-type-1.md. Sends some amount of the token to the smart contract.
@@ -69,10 +71,10 @@ Outputs:
     ])
     ```
     
-    A more detailed explanation can be found in this video: https://youtu.be/Ng2fspoWWUY
+    A more detailed explanation of the script can be found in this video: https://youtu.be/Ng2fspoWWUY
 3. vout ≥2: Arbitrary outputs for sending the remaining tokens/BCH back to the wallet 
 
-The EXCH transaction is created second, and looks like this:
+The **EXCH transaction** is created second, and looks like this:
 
 Outputs:
 1. vout 0: OP_RETURN: The trade listing metadata:
@@ -85,4 +87,18 @@ Outputs:
     7. Buy amount of BCH (in satoshis), 8 bytes, **big endian**
     8. Receiving address of the seller (public key hash), 20 bytes, **big endian**
     9. Cancel address of the seller (public key hash), 20 bytes, **big endian**
-   
+2. vout ≥1: Arbitrary outputs for sending the remaining BCH back to the wallet 
+
+## Limitations of the current protocol
+
+The current protocol works, but has a number of drawbacks:
+
+1. The endianness of the EXCH transaction is inconsistent. It should be entirely big endian, like in the SLP protocol (although unlike the Bitcoin protocol).
+2. It's not possible to accept an offer partially, it can only be bought in full.
+3. It's hard to search all offers for a specific token
+4. It's hard to search only spent/unspent offers
+5. The current protocol assumes that there will be a separate SLP wallet and a BCH DEX wallet, which is cumbersome for users. The application should have one wallet with both the BCH for funding transactions as well as the SLP tokens
+
+## Towards a solution
+
+
